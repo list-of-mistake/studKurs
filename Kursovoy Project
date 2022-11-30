@@ -167,7 +167,7 @@ int ask() {
     cout << "  |3 - вывод всех рейсов                |\n";
     cout << "  |4 - редактирование сохраненного рейса|\n";
     cout << "  |5 - удаление выбранного рейса        |\n";
-    cout << "  |6 - сохранение измений в рейсах      |\n";
+    cout << "  |6 - сохранение изменений в рейсах    |\n";
     cout << "  |7 - сортировка рейсов по параметру   |\n";
     cout << "  |8 - выход из программы               |\n";
     cout << "  ---------------------------------------\n";
@@ -524,6 +524,9 @@ int main()
         search >> tmp.plane_type;
         tmp.plane_type = s_lower(tmp.plane_type);
         getline(search, tmp.destination_city, '\n');
+        if (tmp.destination_city.at(0) == ' ') {
+            tmp.destination_city.erase(0,1);
+        }
         tmp.destination_city = s_lower(tmp.destination_city);
         flight* uk = &tmp;
         first = initial(uk);
@@ -536,6 +539,10 @@ int main()
             search >> ukte->plane_type;
             ukte->plane_type = s_lower(ukte->plane_type);
             getline(search,ukte->destination_city, '\n');
+            if (ukte->destination_city != "")
+                if (ukte->destination_city.at(0) == ' ') {
+                    ukte->destination_city.erase(0, 1);
+                }
             ukte->destination_city = s_lower(ukte->destination_city);
             int n = ukte->destination_city.length();
             for (int i = 1; i < n; i++) {
@@ -628,7 +635,7 @@ int main()
                 record.open("1.txt", ios_base::out | ios_base::trunc);
                 while (first != nullptr) {
                     record << first->values->flight_number << " ";
-                    record << first->values->plane_type;
+                    record << first->values->plane_type<<" ";
                     record << first->values->destination_city << "\n";
                     first = first->next;
                 }
@@ -656,7 +663,7 @@ int main()
                         while (first != nullptr) {
                             record << first->values->flight_number << " ";
                             record << first->values->plane_type << " ";
-                            record << first->values->destination_city << " \n";
+                            record << first->values->destination_city << "\n";
                             first = first->next;
                         }
                         record.close();
