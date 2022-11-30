@@ -1,0 +1,674 @@
+#include <iostream>
+#include <fstream>
+#include <Windows.h>
+#include<string>
+using namespace std;
+bool saved = 0;
+string correct_cin(string s) {
+    getline(cin, s, '\n');
+    int l = s.length();
+    for (int i = 0; i < l; i++) {
+        if (s.at(i) == ' ') {
+            s.erase(i);
+            break;
+        }
+    }
+    return s;
+}
+struct flight {
+    string destination_city;
+    string flight_number;
+    string plane_type;
+};
+struct AEROFLOT
+{
+    flight* values;
+    AEROFLOT* next;
+    AEROFLOT* prev;
+};
+string s_lower(string r);
+AEROFLOT* initial(flight *t) {
+    AEROFLOT* first;
+    first = new AEROFLOT;
+    first->values = t;
+    first->next = nullptr;
+    first->prev = nullptr;
+    return first;
+}
+AEROFLOT* add_in_list(AEROFLOT* f,flight*t) {
+    AEROFLOT* tmp;
+    tmp = new AEROFLOT;
+    f->next = tmp;
+    tmp->prev = f;
+    f = f->next;
+    f->values = t;
+    f->next = nullptr;
+    return f;
+}
+AEROFLOT* out(AEROFLOT *f,flight* save) {
+    AEROFLOT* t = f;
+    if (t->prev == nullptr) {
+        while (t != nullptr) {
+            cout << "\n" << t->values->flight_number << " " << t->values->destination_city << " " << t->values->plane_type;
+            t = t->next;
+        }
+        if (save != nullptr) {
+            cout << "\nсохраненный рейс - " << save->flight_number << " " << save->destination_city << " " << save->plane_type;
+        }
+        return f;
+    }
+    else {
+        while (t->prev != nullptr) {
+            t = t->prev;
+        }
+        while (t != nullptr) {
+            cout << "\n" << t->values->flight_number << " " << t->values->destination_city << " " << t->values->plane_type;
+            t = t->next;
+        }
+        if (save != nullptr) {
+            cout << "\nсохраненный рейс - " << save->flight_number << " " << save->destination_city << " " << save->plane_type;
+        }
+        return f;
+    }
+}
+flight* new_flight() {
+    flight* uk = new flight;
+    cout << "\nВведите город прибытия\t";
+    string city;
+    getline(cin,city,'\n');
+    int count = 0;
+    int l = city.length();
+    for (int i = 0; i < l; i++) {
+        if ((city.at(i) == ' ')&&(i!=l-1)) {
+            city.at(i) = '_';
+            count++;
+            if (count == 2) {
+                city.at(i) = '\n';
+                city.erase(i);
+                break;
+            }
+        }
+        else if ((i == l - 1)&&(city.at(i)==' ')) {
+            city.erase(i);
+        }
+    }
+    cout << "\nВведите номер рейса (4 символа)\t";
+    string num;
+    num = correct_cin(num);
+    if (num.length() != 4) {
+        cout << "\nВведите корректный номер рейса из 4 символов\t";
+        num = correct_cin(num);
+    }
+    cout << "\nВведите тип самолета\t";
+    string plane;
+    plane = correct_cin(plane);
+    city = s_lower(city);
+    num = s_lower(num);
+    plane = s_lower(plane);
+    uk->destination_city = city;
+    uk->flight_number = num;
+    uk->plane_type = plane;
+    saved = 1;
+    return uk;
+}
+flight* find(AEROFLOT* f,int a,string s) {
+    int count = 0;
+    int l = s.length();
+    if (a == 1) {
+        while (f != nullptr) {
+            if ( f->values->destination_city.length()>=l) {
+                string subs = f->values->destination_city;
+                subs.erase(l);
+                if (subs == s) {
+                    cout << "\n" << f->values->flight_number << " " << f->values->destination_city << " " << f->values->plane_type;
+                    count++;
+                }
+            }
+            f = f->next;
+        }
+        if (count == 0) {
+            cout << "Рейс не найден\n";
+        }
+        return nullptr;
+    }
+    else if (a == 2) {
+        while (f != nullptr) {
+            if (f->values->flight_number == s) {
+                cout << "\nРейс " << f->values->flight_number << " " << f->values->destination_city << " " << f->values->plane_type<< " выбран \n";
+                return f->values;
+            }
+            f = f->next;
+        }
+        cout << "Рейс не найден\n";
+        return nullptr;
+    }
+    else {
+        while (f != nullptr) {
+            if (f->values->plane_type.length() >= l) {
+                string subs = f->values->plane_type;
+                subs.erase(l);
+                if (subs == s) {
+                    cout << "\n" << f->values->flight_number << " " << f->values->destination_city << " " << f->values->plane_type;
+                    count++;
+                }
+            }
+            f = f->next;
+        }
+        if (count == 0) {
+            cout << "Рейс не найден\n";
+        }
+        return nullptr;
+    }
+}
+int ask() {
+    cout << "\n  _______________________________________\n";
+    cout << "  |1 - добавление своего рейса          |\n";
+    cout << "  |2 - поиск рейса по параметру         |\n";
+    cout << "  |3 - вывод всех рейсов                |\n";
+    cout << "  |4 - редактирование сохраненного рейса|\n";
+    cout << "  |5 - удаление выбранного рейса        |\n";
+    cout << "  |6 - сохранение измений в рейсах      |\n";
+    cout << "  |7 - сортировка рейсов по параметру   |\n";
+    cout << "  |8 - выход из программы               |\n";
+    cout << "  ---------------------------------------\n";
+    string ask;
+    ask = correct_cin(ask);
+    while ((ask != "1") && (ask != "2") && (ask != "3")&&(ask!="4")&&(ask!="5")&&(ask!="6")&&(ask!="7")&&(ask!="8")) {
+        cout << "Ошибка ввода ";
+        cout << "\n  _______________________________________\n";
+        cout << "  |1 - добавление своего рейса          |\n";
+        cout << "  |2 - поиск рейса по параметру         |\n";
+        cout << "  |3 - вывод всех рейсов                |\n";
+        cout << "  |4 - редактирование сохраненного рейса|\n";
+        cout << "  |5 - удаление выбранного рейса        |\n";
+        cout << "  |6 - сохранение измений в рейсах      |\n";
+        cout << "  |7 - сортировка рейсов по параметру   |\n";
+        cout << "  |8 - выход из программы               |\n";
+        cout << "  ---------------------------------------\n";
+        ask = correct_cin(ask);
+    }
+    if(ask=="1")
+        return 1;
+    if (ask == "2")
+        return 2;
+    if (ask == "3")
+        return 3;
+    if (ask == "4")
+        return 4;
+    if (ask == "5")
+        return 5;
+    if (ask == "6")
+        return 6;
+    if (ask == "7")
+        return 7;
+    if (ask == "8")
+        return 8;
+}
+int ask1() {
+    string a;
+    cout << "  \n  ______________________________\n";
+    cout << "  |1 - поиск по городу прибытия|\n";
+    cout << "  |2 - поиск по номеру рейса   |\n";
+    cout << "  |3 - поиск по виду самолета  |\n";
+    cout << "  ------------------------------\n";
+    cout << "*2 вариант сохраняет рейс для удаления\n";
+    a = correct_cin(a);
+    while ((a != "1") && (a != "2") && (a != "3")) {
+        cout << "Ошибка ввода ";
+        cout << "\n  ______________________________\n";
+        cout << "  |1 - поиск по городу прибытия|\n";
+        cout << "  |2 - поиск по номеру рейса   |\n";
+        cout << "  |3 - поиск по виду самолета  |\n";
+        cout << "  ------------------------------\n";
+        cout << "*2 вариант сохраняет рейс для удаления\n";
+        a = correct_cin(a);
+    }
+    if (a == "1")
+        return 1;
+    if (a == "2")
+        return 2;
+    if (a == "3")
+        return 3;
+
+}
+int ask2() {
+    string a;
+    cout << "\n  ___________________________________\n";
+    cout << "  |1 - сортировка по номеру рейса   |\n";
+    cout << "  |2 - сортировка по городу прибытия|\n";
+    cout << "  |3 - сортировка по виду самолета  |\n";
+    cout << "  -----------------------------------\n";
+    a = correct_cin(a);
+    while ((a != "1") && (a != "2") && (a != "3")) {
+        cout << "Ошибка ввода ";
+        cout << "\n  ___________________________________\n";
+        cout << "  |1 - сортировка по номеру рейса   |\n";
+        cout << "  |2 - сортировка по городу прибытия|\n";
+        cout << "  |3 - сортировка по виду самолета  |\n";
+        cout << "  -----------------------------------\n";
+        a = correct_cin(a);
+    }
+    if (a == "1")
+        return 1;
+    if (a == "2")
+        return 2;
+    if (a == "3")
+        return 3;
+}
+bool check_num(string s,AEROFLOT* f) {
+    bool i = 0;
+    while(f!=nullptr){
+        if (f->values->flight_number == s) {
+            i = 1;
+            break;
+        }
+        f = f->next;
+    }
+    return i;
+}
+AEROFLOT* delete_flight(flight* d,AEROFLOT* f) {
+    AEROFLOT* tmp = f;
+    if(f->values->flight_number==d->flight_number){
+        f = f->next;
+        f->prev = nullptr;
+        delete tmp;
+        saved = 1;
+        cout << "Рейс удален\n";
+        return f;
+    }
+    while (tmp->next->values->flight_number!=d->flight_number) {
+        tmp = tmp->next;
+    }
+    if (tmp->next->values->flight_number == d->flight_number) {
+        AEROFLOT* n = tmp->next->next;
+        delete tmp->next;
+        tmp->next = n;
+        if (n != nullptr) {
+            n->prev = tmp;
+        }
+        saved = 1;
+        cout << "Рейс удален\n";
+        return f;
+    }
+}
+string s_lower(string r)// функция для перехода из верхнего регистра в нижний
+{
+    int c = r.length();
+    for (int i = 0; i < c;i++) {
+        switch (r.at(i))
+        {
+        case 'А': r.at(i) = 'а'; break;
+        case 'Б': r.at(i) = 'б'; break;
+        case 'В': r.at(i) = 'в'; break;
+        case 'Г': r.at(i) = 'г'; break;
+        case 'Д': r.at(i) = 'д'; break;
+        case 'Е': r.at(i) = 'е'; break;
+        case 'Ё': r.at(i) = 'ё'; break;
+        case 'Ж': r.at(i) = 'ж'; break;
+        case 'З': r.at(i) = 'з'; break;
+        case 'И': r.at(i) = 'и'; break;
+        case 'Й': r.at(i) = 'й'; break;
+        case 'К': r.at(i) = 'к'; break;
+        case 'Л': r.at(i) = 'л'; break;
+        case 'М': r.at(i) = 'м'; break;
+        case 'Н': r.at(i) = 'н'; break;
+        case 'О': r.at(i) = 'о'; break;
+        case 'П': r.at(i) = 'п'; break;
+        case 'Р': r.at(i) = 'р'; break;
+        case 'С': r.at(i) = 'с'; break;
+        case 'Т': r.at(i) = 'т'; break;
+        case 'У': r.at(i) = 'у'; break;
+        case 'Ф': r.at(i) = 'ф'; break;
+        case 'Х': r.at(i) = 'х'; break;
+        case 'Ц': r.at(i) = 'ц'; break;
+        case 'Ч': r.at(i) = 'ч'; break;
+        case 'Ш': r.at(i) = 'ш'; break;
+        case 'Щ': r.at(i) = 'щ'; break;
+        case 'Ъ': r.at(i) = 'ъ'; break;
+        case 'Ы': r.at(i) = 'ы'; break;
+        case 'Ь': r.at(i) = 'ь'; break;
+        case 'Э': r.at(i) = 'э'; break;
+        case 'Ю': r.at(i) = 'ю'; break;
+        case 'Я': r.at(i) = 'я'; break;
+        default: r.at(i) = tolower(r.at(i));
+        }
+    }
+    return (r);
+}
+AEROFLOT* myswap(AEROFLOT* f, flight* a) {
+    AEROFLOT* p, * n;
+    flight* t;
+    while (f->values != a) {
+        f=f->next;
+    }
+    if (f->next == nullptr) {
+        while (f->prev != nullptr) {
+            f = f->prev;
+        }
+        return f;
+    }
+    t = f->values;
+    f->values = f->next->values;
+    f->next->values = t;
+    while (f->prev != nullptr) {
+        f = f->prev;
+    }
+    return f;
+}
+AEROFLOT* sorting(AEROFLOT* f,int a) {
+    AEROFLOT* tmp = f,*h=f;
+    int count = 0;
+    while (tmp->next != nullptr)
+    {
+        tmp = tmp->next;
+        count++;
+    }
+    if (a == 1) {
+        for (int j = 0; j < count; j++) {
+            for (int i = 0; i < count; i++) {
+                int c = h->values->flight_number.length();
+                for (int v = 0; v < c; v++)
+                    if (h->values->flight_number.at(v) > h->next->values->flight_number.at(v)) {
+                        myswap(f, h->values);
+                        break;
+                    }
+                    else if (h->values->flight_number.at(v) == h->next->values->flight_number.at(v)) {
+                    }
+                    else break;
+                h = h->next;
+            }
+            while (h->prev != nullptr)
+                h = h->prev;
+        }
+        cout << "отсортировано по номеру рейса\n";
+    }
+    else if (a == 2) {
+        for (int j = 0; j < count; j++) {
+            for (int i = 0; i < count; i++) {
+                int c = h->values->destination_city.length();
+                for (int v = 0; v < c; v++)
+                    if (h->values->destination_city.at(v) > h->next->values->destination_city.at(v)) {
+                        myswap(f, h->values);
+                        break;
+                    }
+                    else if (h->values->destination_city.at(v) == h->next->values->destination_city.at(v)) {
+                    }
+                    else break;
+                h = h->next;
+            }
+            while (h->prev != nullptr)
+                h = h->prev;
+        }
+        cout << "отсортировано по городу прибытия\n";
+    }
+    else if (a == 3) {
+        for (int j = 0; j < count; j++) {
+            for (int i = 0; i < count; i++) {
+                int c = h->values->plane_type.length();
+                for (int v = 0; v < c; v++)
+                    if (h->values->plane_type.at(v) > h->next->values->plane_type.at(v)) {
+                        myswap(f, h->values);
+                        break;
+                    }
+                    else if (h->values->plane_type.at(v) == h->next->values->plane_type.at(v)) {
+                    }
+                    else break;
+                h = h->next;
+            }
+            while (h->prev != nullptr)
+                h = h->prev;
+        }
+        cout << "отсортировано по типу самолета\n";
+    }
+    saved = 1;
+    return f;
+}
+AEROFLOT* edit_flight(AEROFLOT* f, flight* save) {
+    AEROFLOT* tmp = f;
+    while (tmp->values != save) {
+        tmp = tmp->next;
+    }
+    while (1) {
+    cout << "\n  ______________________________________________\n";
+    cout << "  |1 - Редактирование номера сохраненного рейса|\n";
+    cout << "  |2 - Редактирование города прибытия          |\n";
+    cout << "  |3 - Редактирование типа самолета            |\n";
+    cout << "  |4 - выход из редактора                      |\n";
+    cout << "  ----------------------------------------------\n";
+    string i;
+    i = correct_cin(i);
+    while ((i != "1") && (i != "2") && (i != "3")&&(i!="4")) {
+        cout << "Ошибка ввода ";
+        cout << "\n  ______________________________________________\n";
+        cout << "  |1 - Редактирование номера сохраненного рейса|\n";
+        cout << "  |2 - Редактирование города прибытия          |\n";
+        cout << "  |3 - Редактирование типа самолета            |\n";
+        cout << "  |4 - выход из редактора                      |\n";
+        cout << "  ----------------------------------------------\n";
+        i = correct_cin(i);
+    }
+        if (i == "1") {
+            string s;
+            cout << "\nвведите отредактированный номер рейса\n";
+            s = correct_cin(s);
+            s = s_lower(s);
+            if (s == tmp->values->flight_number) {
+                cout << "введенный номер является предыдущим номером этого рейса\n";
+                continue;
+            }
+            bool b = check_num(s,f);
+            if ((b)||(s.length() != 4)) {
+                while ((b)|| (s.length() != 4)) {
+                    cout << "Ошибка ввода, либо введенный номер существует, либо количество символов в номере не равно 4. Повторите ввод\n";
+                    s = correct_cin(s);
+                    b = check_num(s, f);
+                }
+            }
+            tmp->values->flight_number = s;
+            cout << "\n" << tmp->values->flight_number << " " << tmp->values->destination_city << " " << tmp->values->plane_type;
+        }
+        else if (i == "2") {
+            string s;
+            cout << "\nвведите отредактированный город прибытия\n";
+            getline(cin, s, '\n');
+            int count = 0;
+            int l = s.length();
+            for (int i = 0; i < l; i++) {
+                if (s.at(i) == ' ') {
+                    s.at(i) = '_';
+                    count++;
+                    if (count == 2) {
+                        s.at(i) = '\n';
+                        s.erase(i);
+                        break;
+                    }
+                }
+            }
+            s = s_lower(s);
+            tmp->values->destination_city = s;
+            cout << "\n" << tmp->values->flight_number << " " << tmp->values->destination_city << " " << tmp->values->plane_type;
+        }
+        else if (i == "3") {
+            cout << "\nвведите отредактированный тип самолета\n";
+            string s;
+            s = correct_cin(s);
+            s = s_lower(s);
+            tmp->values->plane_type = s;
+            cout << "\n" << tmp->values->flight_number << " " << tmp->values->destination_city << " " << tmp->values->plane_type;
+        }
+        else {
+            cout << "\nрейс-\n";
+            cout << "\n" << tmp->values->flight_number << " " << tmp->values->destination_city << " " << tmp->values->plane_type;
+            break;
+        }
+    }
+    saved = 1;
+    return f;
+}
+int main()
+{
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    ifstream search;
+	search.open("1.txt", ios_base::in);
+    if (!search.is_open())
+    {
+        cout << "Файл поиска не открыт!\n";
+    }
+    else {
+        flight tmp;
+        AEROFLOT* first;
+        string str;
+        search >> tmp.flight_number;
+        tmp.flight_number = s_lower(tmp.flight_number);
+        search >> tmp.plane_type;
+        tmp.plane_type = s_lower(tmp.plane_type);
+        getline(search, tmp.destination_city, '\n');
+        tmp.destination_city = s_lower(tmp.destination_city);
+        flight* uk = &tmp;
+        first = initial(uk);
+        AEROFLOT* t = first;
+        flight* saved_flight = nullptr;
+        while (!search.eof()) {
+            flight* ukte = new flight;
+            search >> ukte->flight_number;
+            ukte->flight_number = s_lower(ukte->flight_number);
+            search >> ukte->plane_type;
+            ukte->plane_type = s_lower(ukte->plane_type);
+            getline(search,ukte->destination_city, '\n');
+            ukte->destination_city = s_lower(ukte->destination_city);
+            int n = ukte->destination_city.length();
+            for (int i = 1; i < n; i++) {
+                if (ukte->destination_city.at(i) == ' ') {
+                    ukte->destination_city.at(i) = '_';
+                }
+            }
+            if ((ukte->flight_number != "") && (ukte->destination_city != "") && (ukte->plane_type != "")) {
+                if (!check_num(ukte->flight_number, first)) {
+                    t = add_in_list(t, ukte);
+                }
+            }
+        }
+        search.close();
+        while (true) {
+            int a = ask();
+            if (a == 3) {
+                first = out(first,saved_flight);
+            }
+            else if (a == 2) {
+                int a1 = ask1();
+                if (a1 == 1) {
+                    cout << "\nВведите город для поиска рейсов\n";
+                    string city;
+                    getline(cin, city, '\n');
+                    int l = city.length();
+                    int c = 0;
+                    for (int i = 0; i < l; i++) {
+                        if ((city.at(i) == ' ') && (i != l - 1)&&(city.at(i+1)!=' ')) {
+                            city.at(i) = '_';
+                        }
+                    }
+                    city = s_lower(city);
+                    find(first, a1, city);
+                }
+                else if (a1 == 2) {
+                    cout << "\nВведите номер для поиска рейсов, введенный рейс будет сохранен для возможного удаления или редактирования \n";
+                    string num;
+                    num = correct_cin(num);
+                    num = s_lower(num);
+                    saved_flight = find(first, a1, num);
+
+                }
+                else {
+                    cout << "\nВведите тип самолета для поиска рейсов\n";
+                    string plane;
+                    plane = correct_cin(plane);
+                    plane = s_lower(plane);
+                    find(first, a1, plane);
+                }
+
+            }
+            else if (a == 1) {
+                flight* uk = new_flight();
+                bool dif = check_num(uk->flight_number, first);
+                if (dif) {
+                    while (dif) {
+                        cout << "\nВведенный номер уже существует, повторите ввод\n";
+                        uk->flight_number = correct_cin(uk->flight_number);
+                        dif = check_num(uk->flight_number, first);
+                    }
+                }
+                t = add_in_list(t, uk);
+
+            }
+            else if (a==4) {
+                if (saved_flight != nullptr) {
+                    first = edit_flight(first,saved_flight);
+                }
+                else {
+                    cout << "\nНет выбранного рейса\n";
+                }
+            }
+            else if (a == 5) {
+                if (saved_flight != nullptr) {
+                    first = delete_flight(saved_flight, first);
+                    t = first;
+                    while (t->next != nullptr) {
+                        t = t->next;
+                    }
+                    saved_flight = nullptr;
+                }
+                else {
+                    cout << "\nНет выбранного рейса\n";
+                }
+            }
+            else if (a==6) {
+                AEROFLOT* tf = first;
+                ofstream record;
+                record.open("1.txt", ios_base::out | ios_base::trunc);
+                while (first != nullptr) {
+                    record << first->values->flight_number << " ";
+                    record << first->values->plane_type;
+                    record << first->values->destination_city << "\n";
+                    first = first->next;
+                }
+                record.close();
+                first = tf;
+                saved = 0;
+                cout << "изменения сохранены\n";
+            }
+            else if (a == 7) {
+                int g = ask2();
+                first=sorting(first,g );
+            }
+            else {
+                if (saved) {
+                    cout << "\nизменения не сохранены!\n";
+                    cout << "для выхода без сохранения введите 1, для сохранения другую клавишу\n";
+                    string e;
+                    e = correct_cin(e);
+                    if (e == "1") {
+                        break;
+                    }
+                    else {
+                        ofstream record;
+                        record.open("1.txt", ios_base::out | ios_base::trunc);
+                        while (first != nullptr) {
+                            record << first->values->flight_number << " ";
+                            record << first->values->plane_type << " ";
+                            record << first->values->destination_city << " \n";
+                            first = first->next;
+                        }
+                        record.close();
+                        cout << "изменения сохранены\n";
+                        break;
+
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+        }
+    }
+}
